@@ -27,8 +27,8 @@ from client.contractnote import ContractNote
 from client.datatype_parser import DatatypeParser
 from client_config import client_config
 from console_utils.console_common import fill_params, match_input_params
-from console_utils.console_common import list_files
-from utils.abi import abi_to_signature
+from console_utils.console_common import list_files, strip_save_flag
+from utils.abi import abi_to_signature, get_constructor_abi
 
 contracts_dir = "contracts"
 
@@ -73,6 +73,9 @@ call合约的一个只读接口,解析返回值,address可以是last或latest,�
         """deploy abi bin file"""
         paramtypes = [("contractname",str,None),("args",list,[])]
         (contractname,fn_args) = match_input_params(inputparams,paramtypes)
+        fn_args = [] if fn_args is None else list(fn_args)
+        need_save_address = True
+        save_flag = None
 
         (fname, extname) = os.path.splitext(contractname)
         if extname.endswith("wasm"):
@@ -92,6 +95,13 @@ call合约的一个只读接口,解析返回值,address可以是last或latest,�
             
             print(f"Deploy bin file: {contract_bin_file}")
             abiparser = DatatypeParser(contract_abi_file)
+            constructor_abi = get_constructor_abi(abiparser.contract_abi)
+            expected_inputs = len(constructor_abi.get("inputs", [])) if constructor_abi else 0
+            fn_args, need_save_address, save_flag = strip_save_flag(fn_args, expected_inputs)
+            if save_flag == "save":
+                print("INFO >> 'save' flag detected, address will be persisted (default behavior).")
+            elif save_flag == "nosave":
+                print("INFO >> 'nosave' flag detected, skip saving address locally.")
             (contract_abi,args) = abiparser.format_abi_args(None,fn_args)
             receipt = tx_client.deployFromFile(contractbinfile=contract_bin_file, fn_args=args)
             print("INFO >> client info: {}".format(tx_client.getinfo()))
@@ -116,8 +126,11 @@ call合约的一个只读接口,解析返回值,address可以是last或latest,�
             txhash = receipt["transactionHash"]
 
             print("on block : {},address: {} ".format(blocknum, address))
-            ContractNote.save_address_to_contract_note(tx_client.get_full_name(),contractname, address)
-            print("address save to file: ", tx_client.config.contract_info_file)
+            if need_save_address:
+                ContractNote.save_address_to_contract_note(tx_client.get_full_name(),contractname, address)
+                print("address save to file: ", tx_client.config.contract_info_file)
+            else:
+                print("INFO >> skip saving new address locally (nosave flag).")
             ContractNote.save_history(tx_client.get_full_name(),contractname,  address, blocknum, txhash,
                                       contract_info_file=tx_client.config.contract_info_file)
             # contractabi = f"{tx_client.config.contract_dir}/{contractname}.abi"

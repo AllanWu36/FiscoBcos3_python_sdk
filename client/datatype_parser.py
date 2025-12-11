@@ -90,12 +90,13 @@ class DatatypeParser:
     # 用于receipt，解析eventlog数组，在原数据中增加解析后的 eventname，eventdata两个数据
     def parse_event_logs(self, logs):
         # print(self.event_abi_map)
+        parsed_logs = []
         for log in logs:
             if "topics" not in log:
-                loglist= log["topic"]
+                loglist = log["topic"]
             else:
                 loglist = log["topics"]
-            if(len(loglist) == 0):  # 匿名event
+            if len(loglist) == 0:  # 匿名event
                 continue
             topic = loglist[0]
             if topic not in self.event_topic_map:
@@ -112,10 +113,12 @@ class DatatypeParser:
             # print(argslist)
             result = decode_abi(argslist, decode_hex(log['data']))
             # print(result)
-            log["topic"] = topic
-            log["eventdata"] = result
-            log["eventname"] = eventabi["name"]
-        return logs
+            decoded_log = dict(log)
+            decoded_log["topic"] = topic
+            decoded_log["eventdata"] = result
+            decoded_log["eventname"] = eventabi["name"]
+            parsed_logs.append(decoded_log)
+        return parsed_logs
 
     def get_func_abi_by_selector(self,inputdata:str):
         if inputdata.startswith("0x"):

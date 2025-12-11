@@ -32,7 +32,7 @@ print(f"getPendingTxSize:{bcos3.getPendingTxSize()}")
 print(f"getBlocklimit:{bcos3.getBlocklimit()}")
 
 
-contractFile = r"contracts\HelloWorld.abi"
+contractFile = r"contracts/HelloWorld.abi"
 abi_parser = DatatypeParser()
 abi_parser.load_abi_file(contractFile)
 contract_abi = abi_parser.contract_abi

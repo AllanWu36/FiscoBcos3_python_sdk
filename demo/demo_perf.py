@@ -11,7 +11,8 @@
   @author: yujiechen
   @date: 2019-07
 '''
-
+import sys
+sys.path.append("./")
 from client.common.transaction_common import TransactionCommon
 from concurrent.futures import ThreadPoolExecutor
 from client.bcoserror import BcosException, BcosError

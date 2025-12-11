@@ -191,3 +191,26 @@ def match_input_params(inputparams, valtypes):
         result.append(param)
         n = n + 1
     return tuple(result)
+
+
+def strip_save_flag(fn_args, expected_inputs=0):
+    """
+    Remove optional trailing 'save'/'nosave' tokens from deploy args.
+    Returns the cleaned args, whether to persist the address, and the flag used.
+    """
+    if fn_args is None:
+        return None, True, None
+    sanitized = list(fn_args)
+    need_save = True
+    flag = None
+    while len(sanitized) > expected_inputs:
+        tail = sanitized[-1]
+        if isinstance(tail, str):
+            normalized = tail.lower()
+            if normalized in ("save", "nosave"):
+                flag = normalized
+                need_save = normalized == "save"
+                sanitized.pop()
+                continue
+        break
+    return sanitized, need_save, flag

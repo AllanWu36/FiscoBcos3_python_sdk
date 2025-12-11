@@ -78,30 +78,44 @@ class CmdAccount:
             print("account save to :", keyfile)
     
     def create_ecdsa_account(self, name, password):
+        # 验证密码长度，必须大于等于6位
         if password is None or len(password) < 6:
             print("\n!!!-> WARNING: Create ECDSA keystore need Password len >=6. etc: [ ****** ] <-!!! \n")
             return
+        # 使用随机熵创建一个新的 ECDSA 账户
         ac = Account.create(password)
+        # 打印生成的账户信息：地址、私钥（Hex）、公钥
         print("new address :\t", ac.address)
         print("new privkey :\t", encode_hex(ac.key))
         print("new pubkey :\t", ac.publickey)
         
+        # 开始计时，用于统计加密耗时
         stat = StatTool.begin()
+        # 使用提供的密码对私钥进行加密，生成 keystore JSON 对象
         kf = Account.encrypt(ac.privateKey, password)
         stat.done()
         print("encrypt use time : %.3f s" % (stat.time_used))
+        
+        # 构造保存文件的路径
         keyfile = "{}/{}.keystore".format(self.account_keyfile_path, name)
         print("save to file : [{}]".format(keyfile))
+        
+        # 检查文件是否已存在
         if not os.access(keyfile, os.F_OK):  # 默认的账号文件不存在，就强行存一个
             forcewrite = True
         else:
+            # 如果文件已存在，先进行备份，避免覆盖旧账户
             # old file exist,move to backup file first
             forcewrite = common.backup_file(keyfile)  # 如果备份文件不成功，就不要覆盖写了
+        
+        # 如果允许写入（新文件或备份成功），则将 keystore 写入文件
         if forcewrite:
             with open(keyfile, "w") as dump_f:
                 json.dump(kf, dump_f)
                 dump_f.close()
         print(">>-------------------------------------------------------")
+        
+        # 验证写入是否成功：尝试读取并解密刚刚保存的文件
         print(
             "INFO >> read [{}] again after new account,address & keys in file:".format(
                 keyfile
@@ -109,10 +123,13 @@ class CmdAccount:
         )
         with open(keyfile, "r") as dump_f:
             keytext = json.load(dump_f)
+            # 统计解密耗时
             stat = StatTool.begin()
             privkey = Account.decrypt(keytext, password)
             stat.done()
             print("decrypt use time : %.3f s" % (stat.time_used))
+            
+            # 从解密出的私钥恢复账户对象，并打印验证
             ac2 = Account.from_key(privkey)
             print("address:\t", ac2.address)
             print("privkey:\t", encode_hex(ac2.key))

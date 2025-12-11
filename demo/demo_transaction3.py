@@ -30,9 +30,9 @@ import traceback
 # 从文件加载abi定义
 demo_config = client_config
 
-if os.path.isfile(demo_config.solc_path) or os.path.isfile(demo_config.solcjs_path):
-    Compiler.compile_file("./contracts/HelloWorld6.sol")
-    Compiler.compile_file("./contracts/SimpleInfo.sol")
+# if os.path.isfile(demo_config.solc_path) or os.path.isfile(demo_config.solcjs_path):
+#     Compiler.compile_file("./contracts/HelloWorld6.sol")
+#     Compiler.compile_file("./contracts/SimpleInfo.sol")
 abi_file = "./contracts/SimpleInfo.abi"
 data_parser = DatatypeParser()
 data_parser.load_abi_file(abi_file)

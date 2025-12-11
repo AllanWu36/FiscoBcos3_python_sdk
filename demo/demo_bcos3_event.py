@@ -2,12 +2,12 @@ import json
 import os
 import sys
 import time
+sys.path.append("./")
 from ctypes import byref
 
 from bcos3sdk.bcos3callbackfuture import BcosCallbackFuture
 from bcos3sdk.bcos3datadef import s2b
 
-sys.path.append("./")
 from bcos3sdk.bcos3sdk_wrap import *
 from client.common.common import print_receipt_logs
 
@@ -66,17 +66,21 @@ if testtype == 1:
 print("-----START: ", cbfuture.context.detail())
 print("->EventSub result: ", subid)
 print("callback:")
-cbfuture.wait().display()
+cbfuture.display()
 
 waittick = 0
 lasttick = time.time()
 while True:
-    if cbfuture.wait().is_timeout is False:  # default timeout 5 sec
+    (is_timeout, resp) = cbfuture.wait()
+    if is_timeout is False:  # default timeout 5 sec
         print(">>> CBFuture Get Message")
-        print(f"{cbfuture.data.strip()}")
-        result = bcos3client.get_result(cbfuture.data)
-        logs = parser.parse_event_logs(result)
-        print_receipt_logs(logs)
+        print(f"{resp.data.strip()}")
+        try:
+            result = bcos3client.get_result(resp.data)
+            logs = parser.parse_event_logs(result)
+            print_receipt_logs(logs)
+        except Exception as e:
+            print(f"Skip parse event log: {e}")
     else:
         print(f">>> CBFuture {subid} timeout ,try again")
     

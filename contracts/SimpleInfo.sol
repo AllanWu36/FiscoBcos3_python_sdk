@@ -65,5 +65,5 @@ contract SimpleInfo{
 		emit on_reset(-100,name);
 	}
 
-    fallback()  external{ counter = counter+1; }
+    fallback() external { counter = counter + 1; }
 }

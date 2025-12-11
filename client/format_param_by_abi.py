@@ -153,12 +153,28 @@ def format_single_param(param, abitype):
                                   " exception: {}").format(param, e))
         return fmt_res
     if "bytes" in abitype:
-        try:
-            fmt_res = bytes(param, "utf-8")
-        except Exception as e:
-            raise ArgumentsError(
-                "ERROR >> parse {} to bytes failed, error info: {}".format(param, e))
-        return fmt_res
+        if isinstance(param, (bytes, bytearray)):
+            return bytes(param)
+        if isinstance(param, str):
+            value = param.strip()
+            # Allow common 0x-prefixed hex literals for bytes/bytes32 inputs
+            if value.startswith("0x") or value.startswith("0X"):
+                hex_body = value[2:]
+                if len(hex_body) % 2 != 0:
+                    hex_body = "0" + hex_body
+                try:
+                    fmt_res = bytes.fromhex(hex_body)
+                except ValueError as e:
+                    raise ArgumentsError(
+                        "ERROR >> parse {} to bytes failed, error info: {}".format(param, e))
+                return fmt_res
+            try:
+                return value.encode("utf-8")
+            except Exception as e:
+                raise ArgumentsError(
+                    "ERROR >> parse {} to bytes failed, error info: {}".format(param, e))
+        raise ArgumentsError(
+            "ERROR >> parse {} to bytes failed, unsupported type {}".format(param, type(param)))
     if "bool" in abitype:
         # 有可能是string或已经是bool类型了，判断下
         if isinstance(param, str):

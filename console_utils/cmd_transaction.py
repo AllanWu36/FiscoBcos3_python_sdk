@@ -23,9 +23,10 @@ from client.common import transaction_common
 from client.contractnote import ContractNote
 from client.datatype_parser import DatatypeParser
 from client_config import client_config
-from console_utils.console_common import fill_params
+from console_utils.console_common import fill_params, strip_save_flag
 from console_utils.console_common import list_files
 from console_utils.console_common import print_receipt_logs_and_txoutput
+from utils.abi import get_constructor_abi
 
 contracts_dir = "contracts"
 
@@ -74,6 +75,22 @@ call合约的一个只读接口,解析返回值,address可以是last或latest,�
         tx_client = transaction_common.TransactionCommon(
             "", contracts_dir, contractname
         )
+        if not tx_client.contract_bin_path.endswith(".wasm"):
+            tx_client.gen_contract_abi(False)
+        expected_inputs = 0
+        if os.path.exists(tx_client.contract_abi_path):
+            try:
+                data_parser = DatatypeParser(tx_client.contract_abi_path)
+                constructor_abi = get_constructor_abi(data_parser.contract_abi)
+                if constructor_abi:
+                    expected_inputs = len(constructor_abi.get("inputs", []))
+            except Exception:
+                pass
+        fn_args, needSaveAddress, save_flag = strip_save_flag(fn_args, expected_inputs)
+        if save_flag == "save":
+            print("INFO >> 'save' flag detected, address will be persisted (default behavior).")
+        elif save_flag == "nosave":
+            print("INFO >> 'nosave' flag detected, skip saving address locally.")
 
         try:
             receipt = tx_client.send_transaction_getReceipt(
@@ -95,10 +112,7 @@ call合约的一个只读接口,解析返回值,address可以是last或latest,�
                 ContractNote.save_address_to_contract_note(tx_client.get_full_name(),name, address)
                 print("address save to file: ", tx_client.bcosconfig.contract_info_file)
             else:
-                print(
-                    """\nNOTE : if want to save new address as last
-                    address for (call/sendtx)\nadd 'save' to cmdline and run again"""
-                )
+                print("INFO >> skip saving new address locally (nosave flag).")
             ContractNote.save_history(tx_client.get_full_name(),name, address, blocknum, txhash)
             contractabi = tx_client.contract_abi_path
             data_parser = DatatypeParser(contractabi)

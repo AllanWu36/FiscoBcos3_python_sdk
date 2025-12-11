@@ -8,11 +8,12 @@ BASH="/bin/bash"
 ZSHRC="${HOME}/.zshrc"
 BASHRC="${HOME}/.bashrc"
 
-SOLC_LINUX_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v0.4.25/solc-linux.tar.gz"
-SOLC_MAC_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v0.4.25/solc-mac.tar.gz"
-SOLC_LINUX_GM_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v0.4.25/solc-linux-gm.tar.gz"
-SOLC_MAC_GM_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v0.4.25/solc-mac-gm.tar.gz"
-SOLC_DIR="bin/solc/v0.4.25"
+SOLC_VERSION="0.6.10"
+SOLC_LINUX_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v${SOLC_VERSION}/solc-linux.tar.gz"
+SOLC_MAC_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v${SOLC_VERSION}/solc-mac.tar.gz"
+SOLC_LINUX_GM_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v${SOLC_VERSION}/solc-linux-gm.tar.gz"
+SOLC_MAC_GM_URL="https://github.com/FISCO-BCOS/solidity/releases/download/v${SOLC_VERSION}/solc-mac-gm.tar.gz"
+SOLC_DIR="bin/solc/v${SOLC_VERSION}"
 SOLC_PATH="${SOLC_DIR}/solc"
 SOLC_GM_PATH="${SOLC_DIR}/solc-gm"
 OS_TYPE="Linux"
@@ -113,10 +114,10 @@ install_solc()
 {
     mkdir -p ${SOLC_DIR}
     LOG_INFO "Download and install solc into ${SOLC_PATH}..."
-    bash tools/download_solc.sh
-    mv solc-0.4.25 ${SOLC_DIR}/solc
-    bash tools/download_solc.sh -g
-    mv solc-0.4.25-gm ${SOLC_DIR}/solc-gm
+    bash tools/download_solc.sh -v "${SOLC_VERSION}"
+    mv solc-${SOLC_VERSION} ${SOLC_DIR}/solc
+    bash tools/download_solc.sh -g -v "${SOLC_VERSION}"
+    mv solc-${SOLC_VERSION}-gm ${SOLC_DIR}/solc-gm
 }
 init_config()
 {
@@ -124,8 +125,8 @@ init_config()
         LOG_INFO "copy config file..."
         execute_cmd "cp client_config.py.template client_config.py"
 	fi
-    solc_path="bin/solc/v0.4.25"
-    LOG_INFO "install solc v0.4.25..."
+    solc_path="bin/solc/v${SOLC_VERSION}"
+    LOG_INFO "install solc v${SOLC_VERSION}..."
     install_solc
 }
 

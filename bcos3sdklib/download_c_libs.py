@@ -11,14 +11,14 @@ from client import filedownloader
 #基础下载站，有可能可以换成gitee
 base_url = "https://github.com/FISCO-BCOS/bcos-c-sdk/releases/download"
 #版本号，可以动态更新，实际上加到url时，前面会加个v，如v3.4.0
-version = "3.4.0"
+version = "3.7.0"
 #网络代理，下载时可能需要使用
 net_proxy=[]
 
 # sample:  设置代理
 net_proxy = {
-    'http': 'http://127.0.0.1:7890',
-    'https': 'http://127.0.0.1:7890',
+    'http': 'http://192.168.1.100:7890',
+    'https': 'http://192.168.1.100:7890',
 }
 
 win_dll_name = "bcos-c-sdk.dll"

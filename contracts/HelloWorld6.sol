@@ -1,3 +1,4 @@
+pragma solidity ^0.6.10;
 contract HelloWorld6{
     string name;
     event onset(string newname);
