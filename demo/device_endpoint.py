@@ -237,8 +237,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     register_parser.add_argument(
         "--contract-tag",
-        default="demo",
-        help="contract.ini 中的段名，默认 demo",
+        default="bcos3-chain0-group0",
+        help="contract.ini 中的段名，默认 bcos3-chain0-group0",
     )
     register_parser.add_argument(
         "--contract-name",

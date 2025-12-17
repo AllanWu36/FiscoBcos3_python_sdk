@@ -110,7 +110,14 @@ class PlatformRuntime:
                     is_timeout, resp = future.wait(timeout=2)
                     if is_timeout:
                         continue
-                    result = client.get_result(resp.data)
+                    if not resp or not getattr(resp, "data", None):
+                        self.logger.debug("收到空事件响应，忽略")
+                        continue
+                    try:
+                        result = client.get_result(resp.data)
+                    except BcosException as exc:
+                        self.logger.debug("跳过非日志响应：%s", exc)
+                        continue
                     logs = self._extract_logs_from_result(result)
                     if not logs:
                         continue
